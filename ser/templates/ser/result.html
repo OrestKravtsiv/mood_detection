@@ -1,0 +1,92 @@
+{% extends "ser/base.html" %}
+{% block title %}Result — {{ record.emotion|title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+
+        <!-- Emotion result card -->
+        <div class="card p-4 mb-4 text-center">
+            <div class="display-1 mb-2">{{ emoji }}</div>
+            <div class="emotion-badge text-primary mb-2">{{ record.emotion }}</div>
+            <div class="text-muted mb-3">Detected emotion</div>
+
+            <!-- Confidence bar -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small" style="min-width:80px">Confidence</span>
+                <div class="progress flex-grow-1" style="height:18px">
+                    <div class="progress-bar bg-primary"
+                         role="progressbar"
+                         style="width: {{ record.confidence_pct }}%"
+                         aria-valuenow="{{ record.confidence_pct }}"
+                         aria-valuemin="0" aria-valuemax="100">
+                        {{ record.confidence_pct }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- All probabilities chart -->
+        {% if probs_json %}
+        <div class="card p-4 mb-4">
+            <h5 class="mb-3">All Emotion Probabilities</h5>
+            <div class="chart-container">
+                <canvas id="probsChart"></canvas>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Mel spectrogram -->
+        {% if record.spectrogram %}
+        <div class="card p-4 mb-4">
+            <h5 class="mb-3">Mel Spectrogram</h5>
+            <img src="{{ record.spectrogram.url }}" alt="Mel spectrogram" class="spectrogram-img">
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="d-flex gap-2">
+            <a href="{% url 'ser:upload' %}" class="btn btn-primary">Analyze another file</a>
+            <a href="{% url 'ser:history' %}" class="btn btn-outline-secondary">View history</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if probs_json %}
+<script>
+const data = {{ probs_json|safe }};
+new Chart(document.getElementById('probsChart'), {
+    type: 'bar',
+    data: {
+        labels: data.labels,
+        datasets: [{
+            label: 'Confidence (%)',
+            data: data.values,
+            backgroundColor: data.labels.map((_, i) =>
+                i === 0 ? 'rgba(13,110,253,0.85)' : 'rgba(13,110,253,0.3)'
+            ),
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: {
+                min: 0,
+                max: 100,
+                ticks: { callback: v => v + '%' },
+                grid: { color: 'rgba(0,0,0,.06)' }
+            },
+            y: { grid: { display: false } }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
