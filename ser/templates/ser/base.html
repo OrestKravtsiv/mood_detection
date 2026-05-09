@@ -1,39 +1,209 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Speech Emotion Recognition{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background: #f8f9fa; }
-        .navbar-brand { font-weight: 700; letter-spacing: 1px; }
-        .card { border: none; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
-        .emotion-badge {
-            font-size: 1.4rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        .spectrogram-img { width: 100%; border-radius: 8px; }
-        .chart-container { position: relative; height: 260px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Emotion AI{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --green:     #00ff88;
+  --purple:    #7c3aed;
+  --purple-hi: #a855f7;
+  --bg:        #080714;
+  --muted:     rgba(255,255,255,.45);
+  --card-bg:   rgba(255,255,255,.04);
+  --border:    rgba(255,255,255,.09);
+}
+
+html { background: var(--bg); }
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #fff;
+}
+
+/* gradient atmosphere */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -5%,  rgba(124,58,237,.28) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 40% at 10% 100%, rgba(168,85,247,.12) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 35% at 90% 85%,  rgba(0,255,136,.06) 0%, transparent 55%),
+    linear-gradient(180deg, #0a0818 0%, #110825 60%, #080714 100%);
+}
+
+canvas#bg-particles {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+
+/* everything sits above the canvas */
+.page-body { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── Navbar ── */
+.navbar {
+  background: rgba(8,7,20,.82) !important;
+  backdrop-filter: blur(22px);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  padding: 14px 0;
+}
+.navbar-brand {
+  font-weight: 700; letter-spacing: 1.5px;
+  font-size: .9rem; color: #fff !important;
+}
+.nav-link { color: var(--muted) !important; font-size: .82rem; letter-spacing: .5px; transition: color .2s; }
+.nav-link:hover { color: #fff !important; }
+
+/* ── Content area ── */
+.main-content { flex: 1; padding: 48px 0 80px; }
+
+/* ── Glass cards ── */
+.glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  backdrop-filter: blur(18px);
+  padding: 28px;
+  margin-bottom: 20px;
+}
+.glass-card h5 {
+  font-size: .82rem; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 20px;
+}
+
+/* Bootstrap .card override */
+.card {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 18px !important;
+  backdrop-filter: blur(18px);
+}
+
+/* ── Progress bars ── */
+.progress {
+  background: rgba(255,255,255,.08) !important;
+  border-radius: 99px !important;
+}
+.progress-bar {
+  background: linear-gradient(90deg, var(--purple), var(--purple-hi)) !important;
+  border-radius: 99px !important;
+}
+
+/* ── Typography ── */
+.gradient-text {
+  background: linear-gradient(135deg, #fff 40%, var(--purple-hi) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.text-muted { color: var(--muted) !important; }
+
+/* ── Buttons ── */
+.btn-glow {
+  padding: 11px 26px; border-radius: 100px;
+  border: 1px solid rgba(168,85,247,.5);
+  background: rgba(124,58,237,.22);
+  color: #fff; font-size: .82rem; font-weight: 500;
+  letter-spacing: .4px; cursor: pointer;
+  transition: all .2s; text-decoration: none;
+  display: inline-flex; align-items: center;
+  backdrop-filter: blur(10px);
+}
+.btn-glow:hover {
+  background: rgba(124,58,237,.42);
+  border-color: rgba(168,85,247,.8);
+  color: #fff; transform: translateY(-1px);
+}
+.btn-outline-glow {
+  padding: 11px 26px; border-radius: 100px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--muted); font-size: .82rem; cursor: pointer;
+  transition: all .2s; text-decoration: none;
+  display: inline-flex; align-items: center;
+}
+.btn-outline-glow:hover { border-color: rgba(255,255,255,.28); color: #fff; }
+
+/* ── Table ── */
+.table { color: #fff !important; }
+.table thead th {
+  font-size: .72rem; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted) !important;
+  border-bottom: 1px solid var(--border) !important; padding: 14px 16px;
+}
+.table tbody td {
+  border-bottom: 1px solid rgba(255,255,255,.04) !important;
+  padding: 14px 16px; vertical-align: middle;
+}
+.table tbody tr:hover td { background: rgba(255,255,255,.03) !important; }
+
+/* ── Chart container ── */
+.chart-wrap { position: relative; height: 260px; }
+
+/* ── Spectrogram ── */
+.spec-img { width: 100%; border-radius: 10px; }
+</style>
 </head>
+
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<canvas id="bg-particles"></canvas>
+
+<div class="page-body">
+  <nav class="navbar navbar-expand-lg">
     <div class="container">
-        <a class="navbar-brand" href="{% url 'ser:upload' %}">🎙️ SER</a>
-        <div class="navbar-nav ms-auto">
-            <a class="nav-link" href="{% url 'ser:upload' %}">Upload</a>
-            <a class="nav-link" href="{% url 'ser:history' %}">History</a>
-        </div>
+      <a class="navbar-brand" href="{% url 'ser:hero' %}">🎙️ Emotion AI</a>
+      <div class="navbar-nav ms-auto d-flex flex-row gap-3">
+        <a class="nav-link" href="{% url 'ser:hero' %}">Analyze</a>
+        <a class="nav-link" href="{% url 'ser:history' %}">History</a>
+      </div>
     </div>
-</nav>
-<div class="container pb-5">
-    {% block content %}{% endblock %}
+  </nav>
+
+  <div class="main-content">
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+<script>
+/* Particle background */
+(function(){
+  const c = document.getElementById('bg-particles');
+  const ctx = c.getContext('2d');
+  function resize(){ c.width = innerWidth; c.height = innerHeight; }
+  addEventListener('resize', resize); resize();
+  const P = Array.from({length:80}, () => ({
+    x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+    r: Math.random()*1.3+.25,
+    vx:(Math.random()-.5)*.18, vy:(Math.random()-.5)*.18,
+    a: Math.random()*.32+.04, da:(Math.random()-.5)*.002,
+  }));
+  (function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    P.forEach(p => {
+      p.x+=p.vx; p.y+=p.vy; p.a+=p.da;
+      if(p.a<.03||p.a>.42) p.da*=-1;
+      if(p.x<0||p.x>c.width||p.y<0||p.y>c.height){
+        p.x=Math.random()*c.width; p.y=Math.random()*c.height;
+      }
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${p.a})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  })();
+})();
+</script>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

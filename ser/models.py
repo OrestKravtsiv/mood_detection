@@ -16,3 +16,10 @@ class PredictionRecord(models.Model):
 
     def confidence_pct(self):
         return round(self.confidence * 100, 1) if self.confidence is not None else None
+
+    @property
+    def emoji(self):
+        return {
+            'angry':'😡','disgust':'🤢','fearful':'😨',
+            'happy':'😊','neutral':'😐','sad':'😢','surprised':'😲',
+        }.get(self.emotion, '🎙️')

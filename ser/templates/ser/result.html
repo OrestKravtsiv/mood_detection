@@ -1,91 +1,95 @@
 {% extends "ser/base.html" %}
-{% block title %}Result — {{ record.emotion|title }}{% endblock %}
+{% block title %}{{ record.emoji }} {{ record.emotion|title }} — Emotion AI{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-8">
+<div class="col-lg-7">
 
-        <!-- Emotion result card -->
-        <div class="card p-4 mb-4 text-center">
-            <div class="display-1 mb-2">{{ emoji }}</div>
-            <div class="emotion-badge text-primary mb-2">{{ record.emotion }}</div>
-            <div class="text-muted mb-3">Detected emotion</div>
-
-            <!-- Confidence bar -->
-            <div class="d-flex align-items-center gap-2">
-                <span class="text-muted small" style="min-width:80px">Confidence</span>
-                <div class="progress flex-grow-1" style="height:18px">
-                    <div class="progress-bar bg-primary"
-                         role="progressbar"
-                         style="width: {{ record.confidence_pct }}%"
-                         aria-valuenow="{{ record.confidence_pct }}"
-                         aria-valuemin="0" aria-valuemax="100">
-                        {{ record.confidence_pct }}%
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- All probabilities chart -->
-        {% if probs_json %}
-        <div class="card p-4 mb-4">
-            <h5 class="mb-3">All Emotion Probabilities</h5>
-            <div class="chart-container">
-                <canvas id="probsChart"></canvas>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Mel spectrogram -->
-        {% if record.spectrogram %}
-        <div class="card p-4 mb-4">
-            <h5 class="mb-3">Mel Spectrogram</h5>
-            <img src="{{ record.spectrogram.url }}" alt="Mel spectrogram" class="spectrogram-img">
-        </div>
-        {% endif %}
-
-        <!-- Actions -->
-        <div class="d-flex gap-2">
-            <a href="{% url 'ser:upload' %}" class="btn btn-primary">Analyze another file</a>
-            <a href="{% url 'ser:history' %}" class="btn btn-outline-secondary">View history</a>
-        </div>
-
+  <!-- Emotion hero card -->
+  <div class="glass-card text-center mb-4" style="padding:40px 28px">
+    <div style="font-size:4.5rem;line-height:1;margin-bottom:14px;
+                filter:drop-shadow(0 0 22px rgba(255,255,255,.22))">
+      {{ record.emoji }}
     </div>
+    <div class="gradient-text mb-1"
+         style="font-size:1.9rem;font-weight:700;letter-spacing:4px;text-transform:uppercase">
+      {{ record.emotion }}
+    </div>
+    <div style="font-size:.78rem;color:var(--muted);letter-spacing:1px;margin-bottom:24px">
+      DETECTED EMOTION
+    </div>
+
+    <!-- Confidence bar -->
+    <div class="d-flex align-items-center gap-3">
+      <span style="font-size:.68rem;color:var(--muted);letter-spacing:1.2px;white-space:nowrap">CONFIDENCE</span>
+      <div class="progress flex-grow-1" style="height:4px">
+        <div class="progress-bar" style="width:{{ record.confidence_pct }}%"></div>
+      </div>
+      <span style="font-size:.88rem;font-weight:600;min-width:40px;text-align:right">
+        {{ record.confidence_pct }}%
+      </span>
+    </div>
+  </div>
+
+  <!-- Probabilities chart -->
+  {% if probs_json %}
+  <div class="glass-card mb-4">
+    <h5>All Emotion Probabilities</h5>
+    <div class="chart-wrap">
+      <canvas id="probsChart"></canvas>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Spectrogram -->
+  {% if record.spectrogram %}
+  <div class="glass-card mb-4">
+    <h5>Mel Spectrogram</h5>
+    <img src="{{ record.spectrogram.url }}" alt="Mel spectrogram" class="spec-img">
+  </div>
+  {% endif %}
+
+  <!-- Actions -->
+  <div class="d-flex gap-3 flex-wrap">
+    <a href="{% url 'ser:hero' %}"    class="btn-glow">Analyze another</a>
+    <a href="{% url 'ser:history' %}" class="btn-outline-glow">View history →</a>
+  </div>
+
+</div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 {% if probs_json %}
 <script>
-const data = {{ probs_json|safe }};
+const d = {{ probs_json|safe }};
 new Chart(document.getElementById('probsChart'), {
-    type: 'bar',
-    data: {
-        labels: data.labels,
-        datasets: [{
-            label: 'Confidence (%)',
-            data: data.values,
-            backgroundColor: data.labels.map((_, i) =>
-                i === 0 ? 'rgba(13,110,253,0.85)' : 'rgba(13,110,253,0.3)'
-            ),
-            borderRadius: 6,
-        }]
-    },
-    options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            x: {
-                min: 0,
-                max: 100,
-                ticks: { callback: v => v + '%' },
-                grid: { color: 'rgba(0,0,0,.06)' }
-            },
-            y: { grid: { display: false } }
-        }
+  type: 'bar',
+  data: {
+    labels: d.labels,
+    datasets: [{
+      data: d.values,
+      backgroundColor: d.labels.map((_,i) =>
+        i===0 ? 'rgba(168,85,247,.88)' : 'rgba(168,85,247,.28)'
+      ),
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display:false } },
+    scales: {
+      x: {
+        min:0, max:100,
+        ticks: { color:'rgba(255,255,255,.4)', callback: v=>v+'%' },
+        grid:  { color:'rgba(255,255,255,.06)' },
+      },
+      y: {
+        ticks: { color:'rgba(255,255,255,.6)', font:{size:12} },
+        grid:  { display:false },
+      }
     }
+  }
 });
 </script>
 {% endif %}

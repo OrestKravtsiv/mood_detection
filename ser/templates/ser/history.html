@@ -1,59 +1,74 @@
 {% extends "ser/base.html" %}
-{% block title %}History — Speech Emotion Recognition{% endblock %}
+{% block title %}History — Emotion AI{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold mb-0">Prediction History</h2>
-    <a href="{% url 'ser:upload' %}" class="btn btn-primary">New Analysis</a>
+  <div>
+    <h2 class="gradient-text fw-bold mb-0" style="font-size:1.8rem;letter-spacing:-0.5px">History</h2>
+    <p style="font-size:.82rem;color:var(--muted);margin-top:4px">Your past emotion analyses</p>
+  </div>
+  <a href="{% url 'ser:hero' %}" class="btn-glow">+ New Analysis</a>
 </div>
 
 {% if records %}
-<div class="card">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Date &amp; Time</th>
-                    <th>Emotion</th>
-                    <th>Confidence</th>
-                    <th>File</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for r in records %}
-                <tr>
-                    <td class="text-muted small align-middle">{{ r.created_at|date:"Y-m-d H:i" }}</td>
-                    <td class="align-middle fw-semibold text-capitalize">{{ r.emotion }}</td>
-                    <td class="align-middle" style="min-width:160px">
-                        {% if r.confidence_pct %}
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="progress flex-grow-1" style="height:10px">
-                                <div class="progress-bar bg-primary"
-                                     style="width:{{ r.confidence_pct }}%"></div>
-                            </div>
-                            <span class="small">{{ r.confidence_pct }}%</span>
-                        </div>
-                        {% endif %}
-                    </td>
-                    <td class="text-muted small align-middle">
-                        {{ r.audio_file.name|slice:"6:" }}
-                    </td>
-                    <td class="align-middle">
-                        <a href="{% url 'ser:result' r.pk %}" class="btn btn-sm btn-outline-primary">
-                            View
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="glass-card" style="padding:0;overflow:hidden">
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Date &amp; Time</th>
+          <th>Emotion</th>
+          <th>Confidence</th>
+          <th>File</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for r in records %}
+        <tr>
+          <td style="color:var(--muted);font-size:.8rem">
+            {{ r.created_at|date:"Y-m-d H:i" }}
+          </td>
+          <td>
+            <span style="margin-right:6px">{{ r.emoji }}</span>
+            <span style="font-weight:600;text-transform:capitalize">{{ r.emotion }}</span>
+          </td>
+          <td style="min-width:160px">
+            {% if r.confidence_pct %}
+            <div class="d-flex align-items-center gap-2">
+              <div class="progress flex-grow-1" style="height:4px">
+                <div class="progress-bar" style="width:{{ r.confidence_pct }}%"></div>
+              </div>
+              <span style="font-size:.8rem;font-weight:600;min-width:38px;text-align:right">
+                {{ r.confidence_pct }}%
+              </span>
+            </div>
+            {% endif %}
+          </td>
+          <td style="color:var(--muted);font-size:.78rem">
+            {{ r.audio_file.name|slice:"6:" }}
+          </td>
+          <td>
+            <a href="{% url 'ser:result' r.pk %}" class="btn-outline-glow"
+               style="padding:7px 16px;font-size:.75rem">
+              View →
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
+
 {% else %}
-<div class="text-center py-5 text-muted">
-    <div class="display-4 mb-3">🎙️</div>
-    <p>No predictions yet. <a href="{% url 'ser:upload' %}">Upload your first audio file.</a></p>
+<div class="glass-card text-center" style="padding:64px 28px">
+  <div style="font-size:3.5rem;margin-bottom:16px">🎙️</div>
+  <div class="gradient-text" style="font-size:1.1rem;font-weight:600;margin-bottom:8px">No analyses yet</div>
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:24px">
+    Record your voice or upload a file to detect your emotion.
+  </p>
+  <a href="{% url 'ser:hero' %}" class="btn-glow">Get Started</a>
 </div>
 {% endif %}
 {% endblock %}
